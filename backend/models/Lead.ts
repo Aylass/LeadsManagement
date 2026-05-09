@@ -3,7 +3,8 @@ import mongoose, { Schema, type Document } from "mongoose"
 export interface LeadDocument extends Document {
   name: string
   email: string
-  status: "New" | "Engaged" | "Proposal Sent" | "Closed-Won" | "Closed-Lost"
+  telephone: string
+  status: "Whatsapp" | "Instagram" | "Boca-boca"
   createdAt: Date
   updatedAt: Date
 }
@@ -25,10 +26,16 @@ const leadSchema = new Schema<LeadDocument>(
       lowercase: true,
       match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, "Please enter a valid email"],
     },
+    telephone: {
+      type: String,
+      required: [true, "Telephone is required"],
+      trim: true,
+      match: [/^\+?[\d\s\-\(\)]{10,}$/, "Please enter a valid telephone number"],
+    },
     status: {
       type: String,
-      enum: ["New", "Engaged", "Proposal Sent", "Closed-Won", "Closed-Lost"],
-      default: "New",
+      enum: ["Whatsapp", "Instagram", "Boca-boca"],
+      default: "Whatsapp",
       required: [true, "Status is required"],
     },
   },
@@ -48,6 +55,7 @@ const leadSchema = new Schema<LeadDocument>(
 // Create indexes for better query performance
 leadSchema.index({ email: 1 })
 leadSchema.index({ status: 1 })
+leadSchema.index({ telephone: 1 })
 leadSchema.index({ createdAt: -1 })
 leadSchema.index({ name: "text", email: "text" })
 
