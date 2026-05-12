@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import * as XLSX from "xlsx"
 import { apiClient, type LeadStatus, type LeadResponse } from "@/lib/api"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -34,6 +35,7 @@ export default function LeadsClient() {
   const [searching, setSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards")
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     const stored = localStorage.getItem("leads-view-mode") as "cards" | "table" | null
@@ -144,6 +146,72 @@ export default function LeadsClient() {
     }
   }
 
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      const first = await apiClient.getLeads({
+        page: 1,
+        limit: 50,
+        search: currentSearch,
+        status: currentStatus,
+        sortBy: currentSortBy,
+        sortOrder: currentSortOrder,
+      })
+
+      if (!first.success || !first.data) return
+
+      let allLeads = [...first.data.leads]
+
+      if (first.data.totalPages > 1) {
+        const pages = Array.from({ length: first.data.totalPages - 1 }, (_, i) =>
+          apiClient.getLeads({
+            page: i + 2,
+            limit: 50,
+            search: currentSearch,
+            status: currentStatus,
+            sortBy: currentSortBy,
+            sortOrder: currentSortOrder,
+          })
+        )
+        const results = await Promise.all(pages)
+        results.forEach((r) => {
+          if (r.success && r.data) allLeads = [...allLeads, ...r.data.leads]
+        })
+      }
+
+      const rows = allLeads.map((lead) => ({
+        Nome: lead.name,
+        "Nome Fantasia": lead.fantasyName || "",
+        Email: lead.email,
+        Telefone: lead.telephone || "",
+        Fax: lead.fax || "",
+        Contato: lead.contact || "",
+        CNPJ: lead.cnpj || "",
+        CPF: lead.cpf || "",
+        CEP: lead.address?.cep || "",
+        Rua: lead.address?.street || "",
+        Número: lead.address?.number || "",
+        Complemento: lead.address?.complement || "",
+        Bairro: lead.address?.neighborhood || "",
+        Cidade: lead.address?.city || "",
+        UF: lead.address?.uf || "",
+        Origem: lead.status,
+        "Data de Cadastro": new Date(lead.createdAt).toLocaleDateString("pt-BR"),
+      }))
+
+      const ws = XLSX.utils.json_to_sheet(rows)
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, "Leads")
+
+      const date = new Date().toISOString().split("T")[0]
+      XLSX.writeFile(wb, `leads_${date}.xlsx`)
+    } catch (err) {
+      console.error("Export failed:", err)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   const handleSearchInputChange = (value: string) => {
     setSearchInput(value)
   }
@@ -204,19 +272,35 @@ export default function LeadsClient() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerenciamento de Leads</h1>
             <p className="text-gray-600">Gerencie e acompanhe todos os seus leads em um único lugar</p>
           </div>
-          <Link href="/leads/new">
-            <button className="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors">
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                />
-              </svg>
-              Adicionar Novo Lead
+          <div className="mt-4 md:mt-0 flex items-center gap-3">
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {exporting ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+              ) : (
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              )}
+              {exporting ? "Exportando..." : "Exportar .xlsx"}
             </button>
-          </Link>
+            <Link href="/leads/new">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                  />
+                </svg>
+                Adicionar Novo Lead
+              </button>
+            </Link>
+          </div>
         </div>
 
         {/* Filters and Search */}
