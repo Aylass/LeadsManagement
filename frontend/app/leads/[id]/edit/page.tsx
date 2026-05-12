@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useParams } from "next/navigation"
 import Link from "next/link"
 import { apiClient, type LeadStatus } from "@/lib/api"
 import Breadcrumb from "@/components/breadcrumb"
@@ -36,31 +36,62 @@ interface FormErrors {
   cep?: string
 }
 
-export default function NewLeadPage() {
+export default function EditLeadPage() {
   const router = useRouter()
+  const params = useParams()
+  const id = params.id as string
+
   const [formData, setFormData] = useState<FormData>({
-    name: "",
-    fantasyName: "",
-    email: "",
-    telephone: "",
-    fax: "",
-    contact: "",
-    cnpj: "",
-    cpf: "",
-    street: "",
-    number: "",
-    complement: "",
-    neighborhood: "",
-    cep: "",
-    city: "",
-    uf: "",
+    name: "", fantasyName: "", email: "", telephone: "", fax: "",
+    contact: "", cnpj: "", cpf: "", street: "", number: "",
+    complement: "", neighborhood: "", cep: "", city: "", uf: "",
     status: "Whatsapp",
   })
   const [errors, setErrors] = useState<FormErrors>({})
   const [globalError, setGlobalError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isFetchingCep, setIsFetchingCep] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  useEffect(() => {
+    const fetchLead = async () => {
+      try {
+        const response = await apiClient.getLead(id)
+        if (response.success && response.data) {
+          const lead = response.data
+          setFormData({
+            name: lead.name ?? "",
+            fantasyName: lead.fantasyName ?? "",
+            email: lead.email ?? "",
+            telephone: lead.telephone ?? "",
+            fax: lead.fax ?? "",
+            contact: lead.contact ?? "",
+            cnpj: lead.cnpj ?? "",
+            cpf: lead.cpf ?? "",
+            street: lead.address?.street ?? "",
+            number: lead.address?.number ?? "",
+            complement: lead.address?.complement ?? "",
+            neighborhood: lead.address?.neighborhood ?? "",
+            cep: lead.address?.cep ?? "",
+            city: lead.address?.city ?? "",
+            uf: lead.address?.uf ?? "",
+            status: lead.status,
+          })
+        } else {
+          setGlobalError("Lead não encontrado.")
+        }
+      } catch {
+        setGlobalError("Não foi possível carregar os dados do lead.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchLead()
+  }, [id])
 
   const set = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -161,29 +192,26 @@ export default function NewLeadPage() {
     setGlobalError(null)
     if (!validate()) return
 
-    const addressData = {
-      ...(formData.street.trim() && { street: formData.street.trim() }),
-      ...(formData.number.trim() && { number: formData.number.trim() }),
-      ...(formData.complement.trim() && { complement: formData.complement.trim() }),
-      ...(formData.neighborhood.trim() && { neighborhood: formData.neighborhood.trim() }),
-      ...(formData.cep.trim() && { cep: formData.cep.trim() }),
-      ...(formData.city.trim() && { city: formData.city.trim() }),
-      ...(formData.uf && { uf: formData.uf }),
-    }
-    const hasAddress = Object.keys(addressData).length > 0
-
     setIsSubmitting(true)
     try {
-      const response = await apiClient.createLead({
+      const response = await apiClient.updateLead(id, {
         name: formData.name.trim(),
-        ...(formData.fantasyName.trim() && { fantasyName: formData.fantasyName.trim() }),
+        fantasyName: formData.fantasyName.trim() || "",
         email: formData.email.trim(),
-        ...(formData.telephone.trim() && { telephone: formData.telephone.trim() }),
-        ...(formData.fax.trim() && { fax: formData.fax.trim() }),
-        ...(formData.contact.trim() && { contact: formData.contact.trim() }),
-        ...(formData.cnpj.trim() && { cnpj: formData.cnpj.trim() }),
-        ...(formData.cpf.trim() && { cpf: formData.cpf.trim() }),
-        ...(hasAddress && { address: addressData }),
+        telephone: formData.telephone.trim() || "",
+        fax: formData.fax.trim() || "",
+        contact: formData.contact.trim() || "",
+        cnpj: formData.cnpj.trim() || "",
+        cpf: formData.cpf.trim() || "",
+        address: {
+          street: formData.street.trim() || undefined,
+          number: formData.number.trim() || undefined,
+          complement: formData.complement.trim() || undefined,
+          neighborhood: formData.neighborhood.trim() || undefined,
+          cep: formData.cep.trim() || undefined,
+          city: formData.city.trim() || undefined,
+          uf: formData.uf || undefined,
+        },
         status: formData.status,
       })
 
@@ -194,7 +222,7 @@ export default function NewLeadPage() {
           router.push("/leads")
         }, 2000)
       } else {
-        setGlobalError(response.error || "Falha ao criar lead")
+        setGlobalError(response.error || "Falha ao atualizar lead")
       }
     } catch (error: any) {
       const msg: string = error.message || ""
@@ -210,14 +238,40 @@ export default function NewLeadPage() {
     }
   }
 
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    try {
+      await apiClient.deleteLead(id)
+      router.push("/leads")
+    } catch {
+      setGlobalError("Não foi possível excluir o lead. Tente novamente.")
+      setShowDeleteConfirm(false)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <>
+        <Breadcrumb />
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+        </div>
+      </>
+    )
+  }
+
   return (
     <>
       <Breadcrumb />
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="container mx-auto px-4 py-8">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">Novo Lead</h1>
-            <p className="text-gray-500 text-sm">Campos marcados com <span className="text-red-500 font-medium">*</span> são obrigatórios</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-1">Editar Lead</h1>
+            <p className="text-gray-500 text-sm">
+              Campos marcados com <span className="text-red-500 font-medium">*</span> são obrigatórios
+            </p>
           </div>
 
           {showSuccess && (
@@ -225,7 +279,7 @@ export default function NewLeadPage() {
               <svg className="h-5 w-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="text-green-800 font-medium">Lead cadastrado com sucesso! Redirecionando...</span>
+              <span className="text-green-800 font-medium">Lead atualizado com sucesso! Redirecionando...</span>
             </div>
           )}
 
@@ -349,7 +403,6 @@ export default function NewLeadPage() {
                 }
               />
               <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                {/* CEP ocupa 2 cols, com spinner */}
                 <div className="md:col-span-2">
                   <Field label="CEP" error={errors.cep}>
                     <div className="relative">
@@ -497,7 +550,7 @@ export default function NewLeadPage() {
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    Cadastrar Lead
+                    Salvar Alterações
                   </>
                 )}
               </button>
@@ -511,6 +564,50 @@ export default function NewLeadPage() {
               </Link>
             </div>
           </form>
+
+          {/* Zona de exclusão */}
+          <div className="mb-8 bg-white shadow rounded-xl p-6 border border-red-100">
+            <h3 className="text-base font-semibold text-gray-800 mb-1">Excluir Lead</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Esta ação é permanente e não pode ser desfeita.
+            </p>
+            {showDeleteConfirm ? (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <span className="text-red-800 text-sm font-medium flex-1">
+                  Tem certeza que deseja excluir este lead?
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5"
+                  >
+                    {isDeleting ? (
+                      <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white" />
+                    ) : null}
+                    Confirmar exclusão
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={isDeleting}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-50 transition-colors"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Excluir Lead
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </>

@@ -15,30 +15,46 @@ export interface LeadResponse {
   totalPages: number
 }
 
+export interface LeadAddress {
+  street?: string
+  number?: string
+  complement?: string
+  neighborhood?: string
+  cep?: string
+  city?: string
+  uf?: string
+}
+
 export interface Lead {
   _id: string
   name: string
+  fantasyName?: string
   email: string
+  telephone?: string
+  fax?: string
+  contact?: string
+  cnpj?: string
+  cpf?: string
+  address?: LeadAddress
   status: LeadStatus
   createdAt: string
   updatedAt: string
 }
 
-export type LeadStatus = "New" | "Engaged" | "Proposal Sent" | "Closed-Won" | "Closed-Lost"
+export type LeadStatus = "Whatsapp" | "Instagram" | "Boca-boca"
 
 export interface LeadQuery {
   page?: number
   limit?: number
   search?: string
   status?: LeadStatus | "all"
-  sortBy?: "name" | "email" | "createdAt"
+  sortBy?: "name" | "email" | "telephone" | "createdAt"
   sortOrder?: "asc" | "desc"
 }
 
 class ApiClient {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     const url = `${API_BASE_URL}${endpoint}`
-
 
     const config: RequestInit = {
       method: options.method || "GET",
@@ -52,25 +68,20 @@ class ApiClient {
     try {
       const response = await fetch(url, config)
 
-      const data = await response.json()
       if (!response.ok) {
-        throw new Error(data.error || `HTTP ${response.status}`)
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || `Erro HTTP ${response.status}`)
       }
 
-      return data
+      return await response.json()
     } catch (error) {
-      console.error("❌ Fetch Error Details:")
-      // Type guard to check if error is an instance of Error
-      if (error instanceof Error) {
-        console.error("- Error Type:", error)
-
-        // Re-throw with more context
-        throw new Error(`API Request Failed: ${error.message}`)
-      } else {
-        // Handle non-Error cases (e.g., string, number, etc.)
-        console.error("- Error Type: Unknown")
-        throw new Error(`API Request Failed: Unknown error`)
+      if (error instanceof TypeError && error.message === "Failed to fetch") {
+        throw new Error("Failed to fetch")
       }
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error("Erro desconhecido")
     }
   }
 
@@ -93,6 +104,31 @@ class ApiClient {
     return this.request<Lead>("/leads", {
       method: "POST",
       body: JSON.stringify(lead),
+    })
+  }
+
+  async getLead(id: string): Promise<ApiResponse<Lead>> {
+    const response = await this.request<any>(`/leads/${id}`)
+    if (response.success && response.data) {
+      // getLeadById uses toJSON transform which converts _id → id
+      response.data._id = response.data.id ?? response.data._id
+    }
+    return response as ApiResponse<Lead>
+  }
+
+  async updateLead(
+    id: string,
+    lead: Partial<Omit<Lead, "_id" | "createdAt" | "updatedAt">>,
+  ): Promise<ApiResponse<Lead>> {
+    return this.request<Lead>(`/leads/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(lead),
+    })
+  }
+
+  async deleteLead(id: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/leads/${id}`, {
+      method: "DELETE",
     })
   }
 

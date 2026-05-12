@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { apiClient, type LeadStatus, type LeadResponse } from "@/lib/api"
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table"
 
 // Custom debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -30,6 +33,19 @@ export default function LeadsClient() {
   const [loading, setLoading] = useState(true)
   const [searching, setSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards")
+
+  useEffect(() => {
+    const stored = localStorage.getItem("leads-view-mode") as "cards" | "table" | null
+    if (stored === "cards" || stored === "table") {
+      setViewMode(stored)
+    }
+  }, [])
+
+  const handleViewMode = (mode: "cards" | "table") => {
+    setViewMode(mode)
+    localStorage.setItem("leads-view-mode", mode)
+  }
 
   // Local search state for immediate UI updates
   const [searchInput, setSearchInput] = useState(searchParams.get("search") || "")
@@ -117,16 +133,12 @@ export default function LeadsClient() {
 
   const getStatusColor = (status: LeadStatus) => {
     switch (status) {
-      case "New":
-        return "bg-blue-100 text-blue-800"
-      case "Engaged":
-        return "bg-yellow-100 text-yellow-800"
-      case "Proposal Sent":
-        return "bg-purple-100 text-purple-800"
-      case "Closed-Won":
+      case "Whatsapp":
         return "bg-green-100 text-green-800"
-      case "Closed-Lost":
-        return "bg-red-100 text-red-800"
+      case "Instagram":
+        return "bg-pink-100 text-pink-800"
+      case "Boca-boca":
+        return "bg-yellow-100 text-yellow-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -175,7 +187,7 @@ export default function LeadsClient() {
               onClick={() => fetchLeads()}
               className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
             >
-              Try Again
+              Tente novamente
             </button>
           </div>
         </div>
@@ -189,8 +201,8 @@ export default function LeadsClient() {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Lead Management</h1>
-            <p className="text-gray-600">Manage and track all your leads in one place</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Gerenciamento de Leads</h1>
+            <p className="text-gray-600">Gerencie e acompanhe todos os seus leads em um único lugar</p>
           </div>
           <Link href="/leads/new">
             <button className="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors">
@@ -202,7 +214,7 @@ export default function LeadsClient() {
                   d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
                 />
               </svg>
-              Add New Lead
+              Adicionar Novo Lead
             </button>
           </Link>
         </div>
@@ -219,7 +231,7 @@ export default function LeadsClient() {
                   d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
                 />
               </svg>
-              Filters & Search
+              Filtros & Busca
               {searching && <div className="ml-2 animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>}
             </h2>
           </div>
@@ -241,7 +253,7 @@ export default function LeadsClient() {
                 </svg>
                 <input
                   type="text"
-                  placeholder="Search by name or email..."
+                  placeholder="Buscar por nome ou email..."
                   value={searchInput}
                   onChange={(e) => handleSearchInputChange(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -258,12 +270,10 @@ export default function LeadsClient() {
                 onChange={(e) => handleStatusFilter(e.target.value as LeadStatus | "all")}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="all">All Statuses</option>
-                <option value="New">New</option>
-                <option value="Engaged">Engaged</option>
-                <option value="Proposal Sent">Proposal Sent</option>
-                <option value="Closed-Won">Closed-Won</option>
-                <option value="Closed-Lost">Closed-Lost</option>
+                <option value="all">Todas as Origens</option>
+                <option value="Whatsapp">Whatsapp</option>
+                <option value="Instagram">Instagram</option>
+                <option value="Boca-boca">Boca-boca</option>
               </select>
 
               <select
@@ -271,9 +281,9 @@ export default function LeadsClient() {
                 onChange={(e) => handleLimitChange(Number(e.target.value))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value={6}>6 per page</option>
-                <option value={10}>10 per page</option>
-                <option value={18}>18 per page</option>
+                <option value={6}>6 por página</option>
+                <option value={10}>10 por página</option>
+                <option value={18}>18 por página</option>
               </select>
 
               <div className="flex gap-2">
@@ -283,7 +293,7 @@ export default function LeadsClient() {
                     currentSortBy === "name" ? "border-blue-500 bg-blue-50" : "border-gray-300"
                   }`}
                 >
-                  Name
+                  Nome
                   {currentSortBy === "name" && (
                     <svg
                       className={`h-4 w-4 ${currentSortOrder === "asc" ? "rotate-180" : ""}`}
@@ -301,7 +311,7 @@ export default function LeadsClient() {
                     currentSortBy === "createdAt" ? "border-blue-500 bg-blue-50" : "border-gray-300"
                   }`}
                 >
-                  Date
+                  Data
                   {currentSortBy === "createdAt" && (
                     <svg
                       className={`h-4 w-4 ${currentSortOrder === "asc" ? "rotate-180" : ""}`}
@@ -320,8 +330,8 @@ export default function LeadsClient() {
 
         {/* Stats Summary */}
         {leadsData && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-            {["New", "Engaged", "Proposal Sent", "Closed-Won", "Closed-Lost"].map((status) => {
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            {(["Whatsapp", "Instagram", "Boca-boca"] as LeadStatus[]).map((status) => {
               const count = leadsData.leads.filter((lead) => lead.status === status).length
               return (
                 <div key={status} className="bg-white shadow-md rounded-lg p-6 text-center">
@@ -338,14 +348,40 @@ export default function LeadsClient() {
           <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                {leadsData ? `${leadsData.leads.length} of ${leadsData.total}` : "0 of 0"} Leads
+                {leadsData ? `${leadsData.leads.length} de ${leadsData.total}` : "0 de 0"} Leads
                 {searching && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>}
               </h2>
-              {leadsData && leadsData.totalPages > 1 && (
-                <div className="text-sm text-gray-600">
-                  Page {leadsData.page} of {leadsData.totalPages}
+              <div className="flex items-center gap-3">
+                {leadsData && leadsData.totalPages > 1 && (
+                  <div className="text-sm text-gray-600">
+                    Página {leadsData.page} de {leadsData.totalPages}
+                  </div>
+                )}
+                <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => handleViewMode("cards")}
+                    title="Visualização em cards"
+                    className={`p-2 transition-colors ${
+                      viewMode === "cards" ? "bg-blue-600 text-white" : "bg-white text-gray-500 hover:bg-gray-50"
+                    }`}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleViewMode("table")}
+                    title="Visualização em tabela"
+                    className={`p-2 transition-colors border-l border-gray-300 ${
+                      viewMode === "table" ? "bg-blue-600 text-white" : "bg-white text-gray-500 hover:bg-gray-50"
+                    }`}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18M10 3v18M6 3h12a3 3 0 013 3v12a3 3 0 01-3 3H6a3 3 0 01-3-3V6a3 3 0 013-3z" />
+                    </svg>
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
           </div>
           <div className="p-6">
@@ -361,66 +397,181 @@ export default function LeadsClient() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No leads found</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum lead encontrado</h3>
                 <p className="text-gray-600 mb-4">
                   {currentSearch || currentStatus !== "all"
-                    ? "Try adjusting your search or filter criteria"
-                    : "Get started by adding your first lead"}
+                    ? "Tente ajustar sua busca ou critérios de filtro"
+                    : "Comece adicionando seu primeiro lead"}
                 </p>
                 <Link href="/leads/new">
                   <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
-                    Add Your First Lead
+                    Adicionar Seu Primeiro Lead
                   </button>
                 </Link>
               </div>
             ) : (
               <>
-                <div className={`space-y-4 ${searching ? "opacity-75" : ""}`}>
-                  {leadsData.leads.map((lead) => (
-                    <div
-                      key={lead._id}
-                      className="p-6 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white"
-                    >
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                            {lead.name.charAt(0).toUpperCase()}
+                {viewMode === "cards" ? (
+                  <div className={`space-y-4 ${searching ? "opacity-75" : ""}`}>
+                    {leadsData.leads.map((lead) => (
+                      <div
+                        key={lead._id}
+                        className="p-6 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white"
+                      >
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                              {lead.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-900">{lead.name}</h3>
+                              {lead.fantasyName && (
+                                <p className="text-sm text-gray-500 italic">{lead.fantasyName}</p>
+                              )}
+                              <div className="flex items-center gap-2 text-gray-600 mt-1">
+                                <svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                <span className="text-sm">{lead.email}</span>
+                              </div>
+                              {lead.telephone && (
+                                <div className="flex items-center gap-2 text-gray-600 mt-0.5">
+                                  <svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                  </svg>
+                                  <span className="text-sm">{lead.telephone}</span>
+                                </div>
+                              )}
+                              {lead.contact && (
+                                <div className="flex items-center gap-2 text-gray-500 mt-0.5">
+                                  <svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                  </svg>
+                                  <span className="text-sm">{lead.contact}</span>
+                                </div>
+                              )}
+                              {lead.address?.city && (
+                                <div className="flex items-center gap-2 text-gray-500 mt-0.5">
+                                  <svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  </svg>
+                                  <span className="text-sm">{lead.address.city}{lead.address.uf ? ` - ${lead.address.uf}` : ""}</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900">{lead.name}</h3>
-                            <div className="flex items-center gap-2 text-gray-600">
+                          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(lead.status)}`}>
+                              {lead.status}
+                            </span>
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
                               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
                                   strokeWidth={2}
-                                  d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                                 />
                               </svg>
-                              <span>{lead.email}</span>
+                              <span>{new Date(lead.createdAt).toLocaleDateString()}</span>
                             </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(lead.status)}`}>
-                            {lead.status}
-                          </span>
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                              />
-                            </svg>
-                            <span>{new Date(lead.createdAt).toLocaleDateString()}</span>
+                            <Link href={`/leads/${lead._id}/edit`}>
+                              <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors text-gray-700">
+                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Editar
+                              </button>
+                            </Link>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={searching ? "opacity-75" : ""}>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>
+                            <button
+                              onClick={() => handleSort("name")}
+                              className="flex items-center gap-1 hover:text-gray-900 font-medium"
+                            >
+                              Nome
+                              {currentSortBy === "name" && (
+                                <svg className={`h-3.5 w-3.5 ${currentSortOrder === "asc" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              )}
+                            </button>
+                          </TableHead>
+                          <TableHead>E-mail</TableHead>
+                          <TableHead>Telefone</TableHead>
+                          <TableHead>Cidade / UF</TableHead>
+                          <TableHead>CNPJ / CPF</TableHead>
+                          <TableHead>Origem</TableHead>
+                          <TableHead>
+                            <button
+                              onClick={() => handleSort("createdAt")}
+                              className="flex items-center gap-1 hover:text-gray-900 font-medium"
+                            >
+                              Data
+                              {currentSortBy === "createdAt" && (
+                                <svg className={`h-3.5 w-3.5 ${currentSortOrder === "asc" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              )}
+                            </button>
+                          </TableHead>
+                          <TableHead></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {leadsData.leads.map((lead) => (
+                          <TableRow key={lead._id}>
+                            <TableCell>
+                              <div className="font-medium text-gray-900">{lead.name}</div>
+                              {lead.fantasyName && (
+                                <div className="text-xs text-gray-500 italic">{lead.fantasyName}</div>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-gray-600">{lead.email}</TableCell>
+                            <TableCell className="text-gray-600">{lead.telephone || "—"}</TableCell>
+                            <TableCell className="text-gray-600">
+                              {lead.address?.city
+                                ? `${lead.address.city}${lead.address.uf ? ` - ${lead.address.uf}` : ""}`
+                                : "—"}
+                            </TableCell>
+                            <TableCell className="text-gray-600">
+                              {lead.cnpj || lead.cpf || "—"}
+                            </TableCell>
+                            <TableCell>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(lead.status)}`}>
+                                {lead.status}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-gray-600 whitespace-nowrap">
+                              {new Date(lead.createdAt).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <Link href={`/leads/${lead._id}/edit`}>
+                                <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors text-gray-700 whitespace-nowrap">
+                                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                  Editar
+                                </button>
+                              </Link>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
 
                 {/* Pagination */}
                 {leadsData.totalPages > 1 && (

@@ -6,11 +6,9 @@ export default async function HomePage() {
   let stats = {
     total: 0,
     statusCounts: {
-      New: 0,
-      Engaged: 0,
-      "Proposal Sent": 0,
-      "Closed-Won": 0,
-      "Closed-Lost": 0,
+      Whatsapp: 0,
+      Instagram: 0,
+      "Boca-boca": 0,
     },
     conversionRate: 0,
   }
@@ -40,9 +38,9 @@ export default async function HomePage() {
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to LeadFlow</h1>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Bem vindo a Alessandrosaba Licores</h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Your comprehensive lead tracking and management dashboard
+              Seu sistema de gestão de leads completo
             </p>
           </div>
 
@@ -50,7 +48,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-gray-600">Total Leads</h3>
+                <h3 className="text-sm font-medium text-gray-600">Total de Leads</h3>
                 <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -61,44 +59,44 @@ export default async function HomePage() {
                 </svg>
               </div>
               <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-              <p className="text-xs text-gray-500">Active leads in pipeline</p>
+              <p className="text-xs text-gray-500">Leads ativos no pipeline</p>
             </div>
 
             <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-gray-600">New Leads</h3>
+                <h3 className="text-sm font-medium text-gray-600">Whatsapp</h3>
                 <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                   />
                 </svg>
               </div>
-              <div className="text-2xl font-bold text-green-600">{stats.statusCounts.New}</div>
-              <p className="text-xs text-gray-500">Awaiting first contact</p>
+              <div className="text-2xl font-bold text-green-600">{stats.statusCounts.Whatsapp}</div>
+              <p className="text-xs text-gray-500">Via Whatsapp</p>
             </div>
 
             <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-gray-600">Closed Won</h3>
-                <svg className="h-5 w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <h3 className="text-sm font-medium text-gray-600">Instagram</h3>
+                <svg className="h-5 w-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
               </div>
-              <div className="text-2xl font-bold text-purple-600">{stats.statusCounts["Closed-Won"]}</div>
-              <p className="text-xs text-gray-500">Successfully converted</p>
+              <div className="text-2xl font-bold text-pink-600">{stats.statusCounts.Instagram}</div>
+              <p className="text-xs text-gray-500">Via Instagram</p>
             </div>
 
             <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-gray-600">Conversion Rate</h3>
+                <h3 className="text-sm font-medium text-gray-600">Porcentagem de Conversão</h3>
                 <svg className="h-5 w-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -109,7 +107,7 @@ export default async function HomePage() {
                 </svg>
               </div>
               <div className="text-2xl font-bold text-orange-600">{stats.conversionRate}%</div>
-              <p className="text-xs text-gray-500">Lead to customer ratio</p>
+              <p className="text-xs text-gray-500">Proporção de lead para cliente</p>
             </div>
           </div>
 
@@ -125,12 +123,12 @@ export default async function HomePage() {
                     d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
                   />
                 </svg>
-                <h2 className="text-2xl font-bold">Add New Lead</h2>
+                <h2 className="text-2xl font-bold">Criar Novo Lead</h2>
               </div>
-              <p className="text-blue-100 mb-6">Capture new potential customers and start building relationships</p>
+              <p className="text-blue-100 mb-6">  Capture novos clientes potenciais e comece a construir relacionamentos</p>
               <Link href="/leads/new">
                 <button className="w-full bg-white text-blue-600 font-semibold py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors">
-                  Create New Lead
+                  Criar Novo Lead
                 </button>
               </Link>
             </div>
@@ -145,14 +143,14 @@ export default async function HomePage() {
                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                   />
                 </svg>
-                <h2 className="text-2xl font-bold">View All Leads</h2>
+                <h2 className="text-2xl font-bold">Ver toda a lista de Leads</h2>
               </div>
-              <p className="text-purple-100 mb-6">Monitor and manage your entire lead database</p>
+              <p className="text-purple-100 mb-6">Monitore e gerencie sua base de dados de leads</p>
               <p className="mb-6 text-purple-50">
               </p>
               <Link href="/leads">
                 <button className="w-full bg-white text-purple-600 font-semibold py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors">
-                  View Lead List
+                  Ver Lista de Leads
                 </button>
               </Link>
             </div>
@@ -161,13 +159,13 @@ export default async function HomePage() {
           {/* Recent Activity */}
           <div className="bg-white shadow-lg rounded-lg">
             <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
-              <p className="text-gray-600">Latest updates from your lead pipeline</p>
+              <h2 className="text-xl font-bold text-gray-900">Atividade Recente</h2>
+              <p className="text-gray-600">Últimas atualizações do seu pipeline de leads</p>
             </div>
             <div className="p-6">
               {recentLeads.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">No recent activity</p>
+                  <p className="text-gray-500">Sem atividade recente</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -185,15 +183,11 @@ export default async function HomePage() {
                       <div className="flex items-center gap-3">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            lead.status === "Closed-Won"
+                            lead.status === "Whatsapp"
                               ? "bg-green-100 text-green-800"
-                              : lead.status === "Closed-Lost"
-                                ? "bg-red-100 text-red-800"
-                                : lead.status === "New"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : lead.status === "Engaged"
-                                    ? "bg-yellow-100 text-yellow-800"
-                                    : "bg-purple-100 text-purple-800"
+                              : lead.status === "Instagram"
+                                ? "bg-pink-100 text-pink-800"
+                                : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
                           {lead.status}

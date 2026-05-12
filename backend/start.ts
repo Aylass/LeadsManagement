@@ -11,7 +11,7 @@ import { errorHandler, notFound } from "./middleware/errorHandler";
 dotenv.config();
 
 const app = express();
-const PORT = 10000;
+const PORT = Number(process.env.PORT) || 3001;
 app.set("trust proxy", 1);
 
 // Connect to MongoDB
@@ -20,18 +20,24 @@ connectDB();
 // CORS configuration
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:3000",
-  // Add other allowed origins as needed
 ];
+
+const isDev = process.env.NODE_ENV !== "production";
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl)
+    // Allow requests with no origin (curl, mobile apps, server-to-server)
     if (!origin) return callback(null, true);
-    
+
+    // In development, allow any localhost origin regardless of port
+    if (isDev && /^https?:\/\/localhost(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
+
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(null, false); // reject without throwing 500
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],

@@ -1,7 +1,8 @@
-export type LeadStatus = "New" | "Engaged" | "Proposal Sent" | "Closed-Won" | "Closed-Lost";
+export type LeadStatus = "Whatsapp" | "Instagram" | "Boca-boca";
 export interface Lead {
     name: string;
     email: string;
+    telephone: string;
     status: LeadStatus;
     createdAt?: Date;
     updatedAt?: Date;
@@ -11,7 +12,7 @@ export interface LeadQuery {
     limit?: number;
     search?: string;
     status?: LeadStatus | "all";
-    sortBy?: "name" | "email" | "createdAt";
+    sortBy?: "name" | "email" | "telephone" | "createdAt";
     sortOrder?: "asc" | "desc";
 }
 export interface LeadResponse {

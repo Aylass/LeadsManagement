@@ -6,7 +6,7 @@ export default function LeadsPage() {
   return (
     <>
       <Breadcrumb />
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<div>Carregando...</div>}>
         <LeadsClient />
       </Suspense>
     </>

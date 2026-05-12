@@ -50,10 +50,24 @@ const leadSchema = new mongoose_1.Schema({
         lowercase: true,
         match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, "Please enter a valid email"],
     },
+    telephone: {
+        type: String,
+        required: [true, "Telephone is required"],
+        trim: true,
+        minlength: [10, "Telephone must be at least 10 characters long"],
+        maxlength: [15, "Telephone cannot exceed 15 characters"],
+    },
+    name: {
+        type: String,
+        required: [true, "Name is required"],
+        trim: true,
+        minlength: [2, "Name must be at least 2 characters long"],
+        maxlength: [100, "Name cannot exceed 100 characters"],
+    },
     status: {
         type: String,
-        enum: ["New", "Engaged", "Proposal Sent", "Closed-Won", "Closed-Lost"],
-        default: "New",
+        enum: ["Whatsapp", "Instagram", "Boca-boca"],
+        default: "Whatsapp",
         required: [true, "Status is required"],
     },
 }, {

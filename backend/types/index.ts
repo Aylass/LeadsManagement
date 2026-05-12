@@ -1,9 +1,25 @@
 export type LeadStatus = "Whatsapp" | "Instagram" | "Boca-boca"
 
+export interface LeadAddress {
+  street?: string
+  number?: string
+  complement?: string
+  neighborhood?: string
+  cep?: string
+  city?: string
+  uf?: string
+}
+
 export interface Lead {
   name: string
+  fantasyName?: string
   email: string
-  telephone: string
+  telephone?: string
+  fax?: string
+  contact?: string
+  cnpj?: string
+  cpf?: string
+  address?: LeadAddress
   status: LeadStatus
   createdAt?: Date
   updatedAt?: Date
