@@ -204,6 +204,7 @@ export const deleteLead = async (req: Request, res: Response): Promise<void> => 
   }
 }
 
+//Get lead statistics for dashboard and calculate conversion rate
 export const getLeadStats = async (req: Request, res: Response): Promise<void> => {
   try {
     const stats = await Lead.aggregate([
